@@ -13,6 +13,53 @@
       color: white;
     }
 
+    /* Pantalla de carga */
+    #loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #050505;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      transition: opacity 0.8s ease, visibility 0.8s;
+    }
+    #loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .loader-title {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #ffe680;
+      text-shadow: 0 0 10px #ffaa00;
+      text-align: center;
+    }
+    .progress-bar-container {
+      width: 250px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff4081, #ffcc00);
+      box-shadow: 0 0 10px #ff4081;
+      transition: width 0.2s ease;
+    }
+    .progress-text {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #ccc;
+    }
+
     #ui-top {
       position: absolute;
       top: 15px;
@@ -117,10 +164,20 @@
 </head>
 <body>
 
+  <!-- Pantalla de Carga -->
+  <div id="loader">
+    <div class="loader-title">Cargando el Universo de Jhoselin... ✨</div>
+    <div class="progress-bar-container">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+    <div id="progress-text" class="progress-text">0%</div>
+  </div>
+
   <div id="ui-top">
     <p>(Gira y acerca la pantalla para explorar los planetas) ✨</p>
   </div>
 
+  <!-- Menú UI lateral -->
   <div id="sidebar-menu">
     <ul>
       <li>☰ Menu</li>
@@ -136,12 +193,47 @@
 
   <div id="labels-container"></div>
 
+  <!-- Corazón de destellos en el centro -->
   <div id="heart-ui" class="heart-container">
     <div class="heart-shape">🤍</div>
     <div class="heart-text">¡TE AMO<br>JHOseLín! ❤️</div>
   </div>
 
+  <!-- Audio de fondo (Robarte un beso) -->
+  <audio id="bg-music" loop preload="auto">
+    <source src="https://ia801503.us.archive.org/15/items/robarte-un-beso-carlos-vives-sebastian-yatra/Robarte%20un%20Beso%20-%20Carlos%20Vives%20%26%20Sebasti%C3%A1n%20Yatra.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
+    const loaderElement = document.getElementById('loader');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const bgMusic = document.getElementById('bg-music');
+
+    // Manager de carga de Three.js
+    const loadingManager = new THREE.LoadingManager();
+
+    loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+      const progress = Math.round((itemsLoaded / itemsTotal) * 100);
+      progressBar.style.width = progress + '%';
+      progressText.innerText = progress + '%';
+    };
+
+    loadingManager.onLoad = function () {
+      progressBar.style.width = '100%';
+      progressText.innerText = '100%';
+      
+      setTimeout(() => {
+        loaderElement.classList.add('hidden');
+        // Reproduce la música una vez completada la carga
+        bgMusic.play().catch(() => {
+          // Si el navegador bloquea el autoplay, se reproducirá al primer clic
+          window.addEventListener('click', () => bgMusic.play(), { once: true });
+          window.addEventListener('touchstart', () => bgMusic.play(), { once: true });
+        });
+      }, 500);
+    };
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -171,12 +263,12 @@
     const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 });
     scene.add(new THREE.Points(starsGeo, starsMat));
 
-    // Cargar la foto enviada como textura del sol
-    const textureLoader = new THREE.TextureLoader();
+    // Cargar textura con el manager de carga
+    const textureLoader = new THREE.TextureLoader(loadingManager);
     const imageName = "WhatsApp Image 2026-08-27 at 3.22.48 PM-convertido-de-jpeg.jpg";
     const sunTexture = textureLoader.load(imageName);
 
-    // Esfera central con la imagen
+    // Esfera central con la foto
     const sunGeo = new THREE.SphereGeometry(3.2, 64, 64);
     const sunMat = new THREE.MeshBasicMaterial({ map: sunTexture });
     const sun = new THREE.Mesh(sunGeo, sunMat);
@@ -207,14 +299,8 @@
     const goldParticles = new THREE.Points(goldGeo, goldMat);
     scene.add(goldParticles);
 
-    // Mensajes para los planetas
+    // 50 Mensajes para los planetas
     const mensajes = [
-      "Te amo ❤️",
-      "Eres mi universo, Jhoselin ✨",
-      "Mi amor eterno Jhoselin 💖",
-      "Jhoselin, eres la más hermosa 🌸",
-      "Cada día contigo es un regalo 🎁",
-      "Cada día contigo es un regalo 💝",
       "Te amo Jhoselin ❤️",
       "Eres mi lugar favorito en el mundo 🌎",
       "Mi universo entero comienza y termina contigo ✨",
