@@ -26,7 +26,6 @@
       text-shadow: 0 0 10px rgba(255, 235, 59, 0.8);
       margin: 0;
     }
-    /* Contenedor para las etiquetas sobre los planetas */
     .label {
       position: absolute;
       color: #ffffff;
@@ -41,7 +40,7 @@
     .big-heart-text {
       position: absolute;
       color: #fff;
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 900;
       text-align: center;
       pointer-events: none;
@@ -63,7 +62,6 @@
   <div id="big-text" class="big-heart-text">¡TE AMO<br>JHOSELIN! ❤️</div>
 
   <script>
-    // Configuración básica de la escena
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -75,8 +73,7 @@
     camera.position.set(0, 18, 32);
     controls.update();
 
-    // Luces para el brillo
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
     const sunLight = new THREE.PointLight(0xffaa00, 2, 100);
@@ -94,17 +91,17 @@
     const starField = new THREE.Points(starsGeometry, starsMaterial);
     scene.add(starField);
 
-    // Sol Central con la Foto de ambos
+    // Cargar la imagen exactamente con el nombre de tu archivo en GitHub
     const textureLoader = new THREE.TextureLoader();
-    // Carga la foto "foto.jpg" que subiste a GitHub
-    const sunTexture = textureLoader.load('foto.jpg');
+    const imageName = "Imagen de WhatsApp 2026-08-27 a las 15.22.48_6f2bd7ba.jpg";
+    const sunTexture = textureLoader.load(imageName);
 
     const sunGeo = new THREE.SphereGeometry(3.5, 32, 32);
     const sunMat = new THREE.MeshBasicMaterial({ map: sunTexture });
     const sun = new THREE.Mesh(sunGeo, sunMat);
     scene.add(sun);
 
-    // Halo de luz brillante alrededor del sol
+    // Resplandor del sol
     const glowGeo = new THREE.SphereGeometry(4.2, 32, 32);
     const glowMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.35 });
     const glow = new THREE.Mesh(glowGeo, glowMat);
@@ -126,19 +123,16 @@
     mensajes.forEach((texto, i) => {
       const radius = (i + 1) * 4.2 + 3;
 
-      // Órbita
       const orbitGeo = new THREE.RingGeometry(radius - 0.04, radius + 0.04, 64);
       const orbitMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, opacity: 0.15, transparent: true });
       const orbit = new THREE.Mesh(orbitGeo, orbitMat);
       orbit.rotation.x = Math.PI / 2;
       scene.add(orbit);
 
-      // Planeta
       const planetGeo = new THREE.SphereGeometry(0.7, 16, 16);
       const planetMat = new THREE.MeshStandardMaterial({ color: 0xff3366, roughness: 0.3, emissive: 0x440011 });
       const planet = new THREE.Mesh(planetGeo, planetMat);
 
-      // Crear elemento HTML para la etiqueta de texto
       const label = document.createElement('div');
       label.className = 'label';
       label.innerText = texto;
@@ -155,19 +149,16 @@
       scene.add(planet);
     });
 
-    // Posicionamiento del texto gigante flotante y etiquetas
     const bigTextDiv = document.getElementById('big-text');
     const sunWorldPos = new THREE.Vector3(0, 5, 0);
 
     function updateOverlay() {
-      // Proyectar texto principal arriba del sol
       const vector = sunWorldPos.clone().project(camera);
       const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
       const y = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
       bigTextDiv.style.left = `${x}px`;
       bigTextDiv.style.top = `${y}px`;
 
-      // Actualizar posiciones de etiquetas de los planetas
       planets.forEach(p => {
         const pPos = p.mesh.position.clone().add(new THREE.Vector3(0, 1.2, 0)).project(camera);
         const px = (pPos.x * 0.5 + 0.5) * window.innerWidth;
@@ -177,14 +168,11 @@
       });
     }
 
-    // Animación continua
     function animate() {
       requestAnimationFrame(animate);
 
-      // Rotación del sol
       sun.rotation.y += 0.002;
 
-      // Movimiento de los planetas
       planets.forEach(p => {
         p.angle += p.speed;
         p.mesh.position.x = Math.cos(p.angle) * p.radius;
@@ -197,7 +185,6 @@
     }
     animate();
 
-    // Redimensionar pantalla
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
